@@ -106,7 +106,7 @@ if ($_GET["giorno"]=="oggi"){
        position:fixed;
         right:2px;
         bottom:20px;
-	font-size: 10px;
+	font-size: 12px;
         z-index:9999;
         border-radius: 10px;
         -moz-border-radius: 10px;
@@ -123,8 +123,8 @@ if ($_GET["giorno"]=="oggi"){
 		<div id="cargando">Loading data...</div>
 
 <div id="infodiv" style="leaflet-popup-content-wrapper">
-<b>Mappa delle segnalazioni per il progetto <a href="http://terremotocentroitalia.info/">Terremoto del Centro Italia</a> Agosto 2016</b>
-</br>Segnalazioni <a href="index.php?giorno=oggi"><b>odierne</b></a> o <b><a href="index.php">progressive</a></b> Map by @piersoft
+<b>Mappa delle segnalazioni per il progetto <a href="http://terremotocentroitalia.info/">Terremoto del Centro Italia</a></b>
+</br>Segnalazioni <a href="index.php?giorno=oggi"><b>ODIERNE</b></a> o <b><a href="index.php">PROGRESSIVE</a></b> Map by @piersoft
 </div>
 
 <script>
@@ -199,16 +199,6 @@ popup += '<a href="'+feature.properties.github_issue+'" target="_blank"><b>Segui
 	firstLineTitles: true
 });
 
-
-
-$('#localizame').click(function(e) {
-	mapa.locate();
-	$('#localizame').text('Localizzando...');
-	mapa.on('locationfound', function(e) {
-		mapa.setView(e.latlng, 15);
-		$('#localizame').text('Localizzato');
-	});
-});
 
 //});
 </script>

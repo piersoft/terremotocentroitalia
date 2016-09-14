@@ -1,20 +1,9 @@
 <?php
-$suff="";
-$string="";
-  $file ='/usr/www/piersoft/terremotocentro/segnalazioni.csv';
-if ($_GET["giorno"]=="oggi"){
-	$string="&giorno=oggi";
-	$suff="1";
-	$file = '/usr/www/piersoft/terremotocentro/segnalazioni1.csv';
+$idpass="";
+if ($_GET["id"]){
+$idpass=$_GET["id"];
 }
-	$indirizzo ="https://terremotocentroitalia.mmilesi.ml/?get-csv=false".$string;
-  $homepage1 = file_get_contents($indirizzo);
-//	$homepage1=str_replace("lon","lng",$homepage1);
-	$homepage1=str_replace("\",\"",";",$homepage1);
-	$homepage1=str_replace("\"","",$homepage1);
 
-  file_put_contents($file, $homepage1);
-//echo $homepage1;
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -36,8 +25,10 @@ if ($_GET["giorno"]=="oggi"){
 		<script src="http://joker-x.github.io/Leaflet.geoCSV/lib/leaflet.markercluster-src.js"></script>
 
 		<!-- GeoCSV: https://github.com/joker-x/Leaflet.geoCSV -->
-		<script src="leaflet.geocsv-src.js"></script>
+		<script src="leaflet.geocsv-src2.js"></script>
 		<script src="leaflet-hash.js"></script>
+    <script src="src/leaflet-search2.js"></script>
+    <link rel="stylesheet" href="src/leaflet-search.css" />
 		<!-- jQuery 1.8.3: http://jquery.com/ -->
 		<script src="http://joker-x.github.io/Leaflet.geoCSV/lib/jquery.js"></script>
 
@@ -50,6 +41,14 @@ if ($_GET["giorno"]=="oggi"){
 			font-family: Arial, sans-serif;
 			font-color: #38383;
 		}
+
+    .search-input {
+    	font-family:Courier
+    }
+    .search-input,
+    .leaflet-control-search {
+    	max-width:400px;
+    }
 
 		#botonera {
 			position:fixed;
@@ -124,83 +123,197 @@ if ($_GET["giorno"]=="oggi"){
 
 <div id="infodiv" style="leaflet-popup-content-wrapper">
 <b>Mappa delle segnalazioni per il progetto <a href="http://terremotocentroitalia.info/">Terremoto del Centro Italia</a></b>
-</br>Segnalazioni <a href="index.php?giorno=oggi"><b>ODIERNE</b></a> o <b><a href="index.php">PROGRESSIVE</a></b> Map by @piersoft
 </div>
 
 <script>
+var cluster=new L.MarkerClusterGroup();
+var dataLayer = new L.geoJson();
+var dataLayer2 = new L.geoJson();
+var idpass="<?php echo $idpass ?>";
 
 $.ajax ({
 	type:'GET',
 	cache: false,
 	dataType:'text',
-	url:'segnalazioni<?php echo $suff; ?>.csv',
+	url:'https://raw.githubusercontent.com/emergenzeHack/terremotocentro/master/_data/issues.csv',
    error: function() {
      alert('Non riesco a caricare i dati');
    },
 	success: function(csv) {
-      var cluster = new L.MarkerClusterGroup();
-		console.log('segnalazioni<?php echo $suff; ?>.csv');
-		bankias.addData(csv);
-		cluster.addLayer(bankias);
-		mapa.fitBounds(cluster.getBounds());
-		mapa.addLayer(cluster);
 
+
+		//console.log('segnalazioni<?php echo $suff; ?>.csv');
+  //  console.log(csv);
+    var substring = "1";
+    //console.log(csv.indexOf(substring) !== -1);
+    if (csv.indexOf(substring) === -1) {
+      alert('Non ci sono segnalazioni odierne');
+    }else{
+//		bankias.addData(csv);
+//		cluster.addLayer(bankias);
+	//	mapa.fitBounds(cluster.getBounds());
+	//	mapa.addLayer(cluster);
+
+  }
 	},
    complete: function() {
       $('#cargando').delay(500).fadeOut('slow');
-
    }
 
 });
 
 
-//;$(function() {
+var mapa = L.map('mapa', {attributionControl:true}).setView([42.6463, 13.3068], 11);
+var prccEarthquakesLayer = L.tileLayer('http://{s}.tiles.mapbox.com/v3/bclc-apec.map-rslgvy56/{z}/{x}/{y}.png', {maxZoom: 8,
+		attribution: 'Map &copy; Pacific Rim Coordination Center (PRCC).  Certain data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+	});
+var osm=L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a> powered by @piersoft'}).addTo(mapa);
+var realvista = L.tileLayer.wms("http://213.215.135.196/reflector/open/service?", {
+   layers: 'rv1',
+   format: 'image/jpeg',attribution: '<a href="http://www.realvista.it/website/Joomla/" target="_blank">RealVista &copy; CC-BY-SA Tiles</a> | <a href="http://openstreetmap.org">OSM</a> powered by @piersoft'});
+   var esi = L.tileLayer.wms("http://mapwarper.net/maps/wms/15512?request=GetCapabilities&service=WMS&version=1.1.1?", {
+      layers: 'rv1',
+      format: 'image/jpeg',attribution: '<a href="http://mapwarper.net/maps/15512#Preview_Map_tab" target="_blank">MapWraper with image uploaded by Napo from ESI<b>after</b> the earthquake</a> | <a href="http://openstreetmap.org">OSM</a> powered by @piersoft'});
 
-var mapa = L.map('mapa', {attributionControl:true}).setView([40.46, -3.75], 5);
 
-L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'}).addTo(mapa);
+
+   var overlays = {
+       "<font style=\"color: #ffffff; background-color: red\">Segnalazioni utenti</font>": dataLayer2,
+       "<font style=\"color: #ffffff; background-color: blue\">Unità Comando Locale</font>":dataLayer
+     };
+
+ var layerControl = new L.Control.Layers({
+ 		'Humanitarian OSM Team': osm,
+ 		'Satellite pre Terremoto': realvista,
+    'ESI post Terremoto': esi,
+    'EarthquakesLayer':prccEarthquakesLayer
+ 	},overlays,{collapsed: false},{position: 'topright'});
+
+ layerControl.addTo(mapa);
+ dataLayer.addTo(mapa);
+ dataLayer2.addTo(mapa);
+
 var hash = new L.Hash(mapa);
+mapa.addControl( new L.Control.Search({
+ url: 'http://nominatim.openstreetmap.org/search?format=json&q={s}',
+ jsonpParam: 'json_callback',
+ propertyName: 'display_name',
+ propertyLoc: ['lat','lon'],
+ circleLocation: true,
+ markerLocation: false,
+ autoType: false,
+ autoCollapse: true,
+ minLength: 2,
+ zoom:18
+}) );
 var customicon = 'pinrossoe.png';
 
-var bankias = L.geoCsv(null, {
-	onEachFeature: function (feature, layer) {
-		var popup = '';
-popup +='<b>ID:</b> '+feature.properties.id+'</br>';
-popup +='<img src="'+feature.properties.url+'" width="200">';
-popup += '<br /><b>Descrizione:</b><br />'+feature.properties.description+'<br />';
-popup += '<b>inviata alle: </b>'+feature.properties.time+'<br />';
-if (feature.properties.telegram_username !=""){
-popup += '<b>dall\'utente: </b><a href="http://telegram.me/'+feature.properties.telegram_username+'" target="_blank">'+feature.properties.telegram_username+'</a><br />';
+
+function onEachFeature(feature, layer) {
+    // does this feature have a property named popupContent?
+    var popupString = '<div class="popup">';
+                        for (var k in feature.properties) {
+                            var v = feature.properties[k];
+                            popupString += '<b>'+k + '</b>: ' + v + '<br />';
+                        }
+      popupString += '</div>';
+      layer.bindPopup(popupString);
+};
+
+function addDataToMapUCL(data, mapa) {
+  var dataLayer1 = L.geoJson(data,{
+        onEachFeature: function(feature, layer) {
+          var popupString = '<div class="popup">';
+            popupString += '<b>Nome: </b>: ' + feature.properties.NAME + '<br />';
+            popupString += '<b>Posizione: </b>: ' + feature.properties.POSIZIONE + '<br />';
+            popupString += '<b>Recapito: </b>: ' + feature.properties.RECAPITO + '<br />';
+            popupString += '<b>Mail: </b>: ' + feature.properties.MAIL + '<br />';
+
+                            //  for (var k in feature.properties) {
+                            //      var v = feature.properties[k];
+                            //      popupString += '<b>'+k + '</b>: ' + v + '<br />';
+                            //  }
+            popupString += '</div>';
+            layer.bindPopup(popupString);
+
+          }
+        });
+    dataLayer1.addTo(dataLayer);
 }
-if (feature.properties.github_issue !=""){
-popup += '<a href="'+feature.properties.github_issue+'" target="_blank"><b>Segui la segnalazione</b></a><br />';
+
+$.getJSON("zone_competenza_ucl.geojson", function(data) { addDataToMapUCL(data, mapa); });
+
+
+function addDataToMap(data, mapa) {
+  var dataLayer1 = L.geoJson(data,{
+        onEachFeature: function(feature, layer) {
+      var popup = '<div class="popup">';
+      popup +='<b>ID:</b> '+feature.properties.id+'</br>';
+      if (feature.properties.image !=""){
+      popup +='<a href="'+feature.properties.image+'" target="_blank"><img src="'+feature.properties.image+'" width="200"></a>';
+      popup +='</br>(<i>clicca l\'immagine per ingrandirla</i>)<br />';
+      }
+      popup += '<b>Descrizione:</b><br />'+feature.properties.title+'<br />';
+      popup += '<b>inviata alle: </b>'+feature.properties.created_at+'<br />';
+      popup += '<b>aggiornata alle: </b>'+feature.properties.updated_at+'<br />';
+      if (feature.properties.body !=""){
+      //  console.log(feature.properties.body);
+      var firstvariable = "telegram_user:";
+      var secondvariable = "descrizione"
+      var regExString = "(?="+firstvariable+").*?(?="+secondvariable+")";
+      var test = feature.properties.body;
+      var testRE = test.match(regExString);
+
+      console.log("new text: " + testRE);
+
+  if (testRE !=null)  popup += '<b>dall\'utente Telegram: </b><a href="http://telegram.me/'+testRE+'" target="_blank">'+testRE+'</a><br />';
+      }
+      if (feature.properties.url !=""){
+      popup += '<a href="'+feature.properties.url+'" target="_blank"><b>Segui la segnalazione</b></a><br />';
+      }
+            popup += '</div>';
+            layer.bindPopup(popup);
+            if (idpass !=""){
+
+              if (feature.properties.id == idpass){
+                mapa.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],17)
+
+                mapa.on("zoomend", function(){
+
+                layer.bindPopup(popup).openPopup();
+                console.log(idpass + " "+feature.properties.id);
+                layer.bindPopup(popup).openPopup();
+              });
+              mapa.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],18)
+
+              }
+            }
+
+          },
+
+        	pointToLayer: function (feature, latlng) {
+
+        		return L.marker(latlng, {
+        			icon:L.icon({
+        				iconUrl: customicon,
+        				shadowUrl: 'marker-shadow.png',
+        				iconSize: [20,20],
+        				shadowSize:   [30, 30],
+        				shadowAnchor: [10, 18]
+        			})
+        		});
+        	},
+        	firstLineTitles: true,
+
+        });
+    dataLayer1.addTo(dataLayer2);
 }
-		for (var clave in feature.properties) {
-
-		//	var title = bankias.getPropertyTitle(clave);
-		//	popup += '<b>'+title+'</b><br />'+feature.properties[clave]+'<br /><br />';
-
-		}
-		layer.bindPopup(popup);
-	},
-
-	pointToLayer: function (feature, latlng) {
-
-		return L.marker(latlng, {
-			icon:L.icon({
-				iconUrl: customicon,
-				shadowUrl: 'marker-shadow.png',
-				iconSize: [20,20],
-				shadowSize:   [30, 30],
-				shadowAnchor: [10, 18]
-			})
-		});
-	},
-	firstLineTitles: true
-});
+$.getJSON("http://www.piersoft.it/terremotocentro/get.php", function(data) { addDataToMap(data, mapa); });
 
 
-//});
+
+dataLayer.setZIndex(1);
+dataLayer2.setZIndex(2);
 </script>
 
 	</body>

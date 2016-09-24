@@ -257,27 +257,19 @@ function addDataToMap(data, mapa) {
       popup += '<b>Descrizione:</b><br />'+feature.properties.title+'<br />';
       popup += '<b>inviata alle: </b>'+feature.properties.created_at+'<br />';
       popup += '<b>aggiornata alle: </b>'+feature.properties.updated_at+'<br />';
-     if (feature.properties.body !=""){
+    //  if (feature.properties.body !=""){
       //  console.log(feature.properties.body);
-      var firstvariable = "telegram_user: ";
-      var secondvariable = "\"";
+      var firstvariable = "telegram_user:";
+      var secondvariable = "\\";
       var regExString = "(?="+firstvariable+").*?(?="+secondvariable+")";
       var test = feature.properties.body;
       var testRE = test.match(regExString);
 
+      console.log("new text: " + feature.properties.labels);
 
-
-  if (testRE !=null){
-		var test1=String(testRE).replace("telegram_user:","");
-		test1=String(test1).replace("''","");
-		test1=String(test1).replace("n","");
-		test1=String(test1).replace("\\","");
-		test1=String(test1).replace(" ","");
-	//	console.log("new text: " + test1);
-		popup += '<b>dall\'utente Telegram: </b><a href="http://telegram.me/'+test1+'" target="_blank">'+test1+'</a><br />';
-
-	}
-}
+  //if (testRE !=null)
+	popup += '<b>dall\'utente Telegram: </b><a href="http://telegram.me/'+testRE+'" target="_blank">'+testRE+'</a><br />';
+    //  }
       if (feature.properties.url !=""){
       popup += '<a href="'+feature.properties.url+'" target="_blank"><b>Segui la segnalazione</b></a><br />';
       }
